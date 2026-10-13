@@ -1,0 +1,11 @@
+# Keep LF in the repository and in the working copy: tools/build.sh and the
+# emulator harnesses are run under bash, and CRLF breaks them.
+* text=auto eol=lf
+
+# The quick-start on the SD card is read in Notepad on Windows.
+dist/LEGGIMI.TXT text eol=crlf
+
+*.png binary
+*.gbc binary
+*.zip binary
+*.pdf binary

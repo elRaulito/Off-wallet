@@ -1,0 +1,33 @@
+# build output
+build/
+*.o
+*.lst
+*.sym
+*.map
+*.noi
+*.rel
+*.asm
+*.ihx
+*.cdb
+*.lk
+*.adb
+
+# cartridge saves produced by the emulator harnesses
+*.ram
+*.sav
+
+# host test binaries and their output
+test/*.exe
+test/out_*.txt
+
+# the GBDK-2020 toolchain is a third-party download, not part of this repo.
+# Unpack release 4.5.0 from https://github.com/gbdk-2020/gbdk-2020 here.
+tools/gbdk/
+
+__pycache__/
+*.pyc
+
+# Krikzz's EverDrive OS is their software, downloaded from krikzz.com.
+# Not redistributed here.
+dist/*.zip
+dist/changelist.txt

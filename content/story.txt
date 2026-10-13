@@ -1,0 +1,380 @@
+# OffWallet content file
+# =======================
+# Everything the game says, shows and who says it. Edit this, then rebuild:
+#
+#     bash tools/build.sh game
+#
+# tools/gen/gen_story.py compiles this into the ROM and CHECKS IT for you:
+# lines that are too wide, missing sections, unknown ids and art that is not
+# 16x16 all stop the build with a clear message. A Game Boy screen is 20 tiles
+# wide and 18 tall, so:
+#
+#   * screen text starting at column x can be at most (20 - x) characters
+#   * dialogue lines can be at most 18 characters (the box eats two columns)
+#
+# Syntax
+# ------
+#   # comment
+#   [section id]        starts a section; keys are "key = value"
+#
+# Sections
+# --------
+#   [config]            a few positions and the unlocked starter
+#   [palette id]        colors = #RRGGBB x4  (background, light, mid, dark)
+#   [sprite id]         16 lines of 16 characters: . = colour 0, - = 1,
+#                       + = 2, # = 3. Becomes a 16x16 (2x2 tile) graphic.
+#   [character id]      name / sprite / palette / portrait = x,y
+#   [screen id]         a list of draw commands, one per line:
+#                         text   x,y <string>     normal colours
+#                         accent x,y <string>     highlight palette
+#                         warn   x,y <string>     red palette
+#                         sprite x,y <sprite id>
+#                         blank  x,y,width        erase a run of tiles
+#                       key "clear = no" draws on top of what is already there
+#   [dialog id]         one or more boxes. "speaker = <character id>" applies
+#                       to the boxes that follow; "--" starts the next box;
+#                       up to 3 lines per box.
+#
+# Built-in palettes: text, warn, accent. All artwork is declared below.
+# Section ids marked REQUIRED below are referenced by the game code: you can
+# change their contents freely, but do not rename or delete them.
+
+
+[config]
+# Which of the three starter slots can actually be opened (0, 1 or 2).
+starter_unlocked  = 0
+# Where the "^" marker goes for each starter slot.
+starter_cursor_0  = 3,3
+starter_cursor_1  = 9,3
+starter_cursor_2  = 15,3
+# The ">" cursor in the wallet menu: first row, and rows between entries.
+wallet_menu_x     = 0
+wallet_menu_y     = 6
+wallet_menu_step  = 2
+wallet_menu_count = 6
+# The coin-flip entropy screen: top-left corner of the H/T grid, how many
+# flips per row, and the rows the game writes the counters and prompt on.
+flip_grid         = 2,4
+flip_grid_cols    = 16
+flip_count_y      = 13
+flip_stats_y      = 14
+flip_prompt_y     = 16
+
+
+# ----------------------------------------------------------------- palettes
+# These three are the ones the text uses, and the names are fixed: "text" for
+# body text, "accent" for highlights, "warn" for the SECRET header. Recolour
+# them freely. Together with the artwork below they share the console's eight
+# background palettes.
+
+[palette text]
+colors = #fffede #b5b594 #525262 #101021
+
+[palette warn]
+colors = #ffffff #ff5252 #312131 #a52121
+
+[palette accent]
+colors = #ffffff #ffb531 #422910 #d67b18
+
+# Sprites drawn as PNGs bring their own colours (see [sprite] below), so the
+# only palettes needed here are ones you want to name and reuse, for instance
+# for text. Three are built in: text, warn and accent.
+
+
+# ------------------------------------------------------------------ sprites
+# Artwork lives in content/art/*.png and can be drawn in any image editor.
+# Rules: width and height are multiples of 8 (a tile), at most 4x4 tiles, and
+# at most 4 colours per image (transparent counts as the background colour).
+#
+# "palette = auto" (the default) takes the four colours straight from the PNG:
+# draw in whatever colours you like and the Game Boy shows those. Name a
+# palette instead to force an existing one. Each distinct auto palette uses one
+# of the console's 8 background palette slots.
+#
+# ASCII art still works: instead of "png = ...", write 16 rows of 16 characters
+# using . - + # for the four colours. Handy for a quick tweak without an editor.
+
+[sprite ball]
+png = art/ball.png
+# The console has eight background palettes and three go to the text, so the
+# artwork can claim five. This little menu icon shares the built-in red
+# "warn" palette instead of claiming a sixth; drop this line if you would
+# rather it had its own colours and give one up elsewhere.
+palette = warn
+
+[sprite egg_btc]
+png = art/egg_btc.png
+
+[sprite egg_b]
+png = art/egg_b.png
+
+[sprite egg_c]
+png = art/egg_c.png
+
+[sprite btc]
+png = art/btc.png
+
+[sprite prof]
+png = art/prof.png
+
+
+# --------------------------------------------------------------- characters
+[character prof]
+# REQUIRED. The person you talk to at the start.
+name     = SATOSHI
+sprite   = prof
+portrait = 9,2
+
+
+# ------------------------------------------------------------------ screens
+[screen title]
+# REQUIRED
+sprite 9,3 btc
+text   1,6 O F F W A L L E T
+text   2,8 a taproot wallet
+text   1,9 for game boy color
+accent 4,13 PRESS START
+text   1,16 no net. no radio.
+text   1,17 no way in.
+
+[screen starter]
+# REQUIRED. Three balls on the table.
+accent 2,1 CHOOSE A STARTER
+sprite 3,4 egg_btc
+sprite 9,4 egg_b
+sprite 15,4 egg_c
+text   3,7 BTC
+text   10,7 B
+text   16,7 C
+
+[screen egg_swift]
+# REQUIRED. The egg chooser with the first egg selected.
+accent 1,1 PICK YOUR EGG
+sprite 3,3 egg_btc
+sprite 13,3 egg_btc
+text   1,6 SWIFT
+text   11,6 ANCIENT
+text   1,8 > one key, WIF
+text   1,9   12 words BIP39
+text   1,11 Hatches in about
+text   1,12 70 seconds. Back
+text   1,13 up the WIF key.
+text   1,16 A:pick  <>:switch
+
+[screen egg_ancient]
+# REQUIRED. The same screen with the second egg selected.
+accent 1,1 PICK YOUR EGG
+sprite 3,3 egg_btc
+sprite 13,3 egg_btc
+text   1,6 SWIFT
+text   11,6 ANCIENT
+text   1,8   one key, WIF
+text   1,9 > 12 words BIP39
+text   1,11 Needs ~20 minutes
+text   1,12 of patience. Any
+text   1,13 wallet restores it.
+text   1,16 A:pick  <>:switch
+
+[screen flip_coin]
+# REQUIRED. Entropy, one coin flip per button press. The grid of H and T, the
+# two counter rows and the prompt at the bottom are all drawn by the game;
+# flip_grid, flip_count_y, flip_stats_y and flip_prompt_y in [config] say
+# where they go. 128 flips = 128 bits = the whole secret.
+accent 1,0 FLIP YOUR OWN KEY
+text   1,1 Each press is one
+text   1,2 coin flip. H=1 T=0
+
+[screen hatch]
+# REQUIRED. The progress bar is drawn by the game at row 11.
+accent 3,1 THE EGG IS
+accent 3,2 HATCHING!
+sprite 9,4 egg_btc
+text   1,7 Do not turn off
+text   1,8 the power!
+
+[screen hatch_key]
+# REQUIRED. Status line, drawn over the hatching screen.
+clear = no
+text 1,14 deriving key...
+
+[screen hatch_stretch]
+# REQUIRED. Status while PBKDF2 grinds through its 2048 rounds.
+clear = no
+text 1,14 stretching seed
+text 1,15 2048 rounds...
+
+[screen hatch_path]
+# REQUIRED
+clear = no
+blank 1,15,18
+text  1,14 deriving path...
+
+[screen wallet]
+# REQUIRED. The main menu. The address and the cursor are drawn by the game.
+# The entries are in the order the game handles them; wallet_menu_* in
+# [config] says where the cursor goes and how many there are.
+accent 1,0 OFFWALLET
+sprite 16,0 ball
+text   2,6 ADDRESS
+text   2,8 RECEIVE (QR)
+text   2,10 MY UTXOS
+text   2,12 SECRET
+text   2,14 OUTPUT KEY
+text   2,16 SAVE TO CART
+text   1,17 A: pick
+
+[screen receive]
+# REQUIRED. The QR itself is drawn by the game over rows 2 to 15.
+accent 1,0 SCAN TO PAY ME
+text   1,17 B: back
+
+[screen receive_wait]
+# REQUIRED. Shown while the QR is being computed (a few seconds).
+accent 1,0 RECEIVE
+text   1,8 building the QR
+text   1,9 code...
+
+[screen utxo_list]
+# REQUIRED. The coins the wallet knows about. The balance and the rows are
+# filled in by the game (rows 2 and 4 to 11).
+accent 1,0 MY UTXOS
+text   1,13 A:add  SEL:delete
+text   1,14 B: back
+
+[screen utxo_txid]
+# REQUIRED. Typing in a transaction id: 64 hex characters.
+accent 1,0 TXID (64 HEX)
+text   1,1 as the explorer
+text   1,16 A:add B:del SEL:esc
+text   1,17 START when full
+
+[screen utxo_vout]
+# REQUIRED
+accent 1,0 OUTPUT INDEX
+text   1,1 3 digits, e.g. 000
+text   1,16 A:add B:del SEL:esc
+text   1,17 START when full
+
+[screen utxo_value]
+# REQUIRED
+accent 1,0 AMOUNT IN SATS
+text   1,1 10 digits, padded
+text   1,16 A:add B:del SEL:esc
+text   1,17 START when full
+
+[screen address]
+# REQUIRED. The address itself is drawn by the game at rows 3 to 6.
+accent 1,0 YOUR ADDRESS
+sprite 16,0 btc
+text   1,8 P2TR / taproot
+text   1,11 Back up the key
+text   1,12 before using it.
+text   1,16 B: back
+
+[screen secret_wif]
+# REQUIRED. The WIF and hex key are drawn by the game.
+warn 1,0 SECRET - KEEP SAFE
+text 1,2 WIF - import as
+text 1,3 a taproot key:
+text 1,9 hex:
+text 1,15 B: back
+
+[screen secret_words]
+# REQUIRED. The 12 words are drawn by the game, one per row from row 2.
+warn 1,0 SECRET - KEEP SAFE
+text 1,1 12 WORDS (BIP39)
+text 1,15 B: back
+
+[screen output_key]
+# REQUIRED. The key bytes are drawn by the game at rows 2 to 5.
+accent 1,0 OUTPUT KEY (x-only)
+text   1,7 scriptPubKey:
+text   1,8 OP_1 <32-byte>
+text   1,10 Compare this with
+text   1,11 the wallet you
+text   1,12 import the key in.
+text   1,16 B: back
+
+
+# ----------------------------------------------------------------- dialogue
+[dialog intro]
+# REQUIRED. The opening conversation.
+speaker = prof
+Hello! Welcome
+to the world of
+BLOCKCHAINS!
+--
+They call me the
+BLOCKCHAIN PROF.
+Others say SATOSHI
+--
+This world is
+home to creatures
+called UTXOs!
+--
+Some keep them on
+exchanges. That is
+not keeping them.
+--
+Your own key story
+is about to begin.
+Let us go!
+
+[dialog starter_ok]
+# REQUIRED. Shown while the unlocked starter is highlighted.
+BITCOIN!
+The only starter
+that is real.
+
+[dialog starter_locked]
+# REQUIRED. Shown on the two slots that cannot be opened.
+That one never
+hatched in this
+world. Take BTC.
+
+[dialog starter_chosen]
+# REQUIRED
+speaker = prof
+You chose BITCOIN!
+A fine choice.
+The only one.
+
+[dialog flips_done]
+# REQUIRED. After all 128 flips have been taken.
+128 flips. That
+is your key, and
+you watched it
+--
+land. The egg is
+warm. Something
+moves inside...
+
+[dialog congrats]
+# REQUIRED. The wallet is ready.
+speaker = prof
+Congratulations!
+Your UTXO home is
+ready!
+
+[dialog hatch_failed]
+# REQUIRED. Only reachable on a one-in-2^128 bad key.
+The egg did not
+hatch. Reset and
+try again.
+
+[dialog saved]
+# REQUIRED. After SAVE TO CART.
+Saved to the
+cart battery.
+Whoever holds it
+--
+can read the key,
+so treat the cart
+like cash.
+
+[dialog welcome_back]
+# REQUIRED. Shown when a wallet is already in the cartridge.
+speaker = prof
+Welcome back!
+Your wallet is in
+the cart.

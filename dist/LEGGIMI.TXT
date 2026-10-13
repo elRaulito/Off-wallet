@@ -1,0 +1,121 @@
+OFFWALLET - wallet Bitcoin taproot per Game Boy Color
+=====================================================
+
+Un hardware wallet offline: niente rete, niente radio, niente
+sistema operativo, niente che si aggiorni da solo. La chiave si
+genera sulla console, un lancio di moneta alla volta, e non esce
+mai dalla cartuccia.
+
+Il file OFFWALL.GBC su questa scheda e' il wallet.
+
+
+PRIMA DI PARTIRE
+----------------
+L'OS dell'EverDrive (da krikzz.com) e' gia' sulla scheda, nella
+versione che su questa cartuccia parte senza errori, e DEVE
+stare esattamente qui:
+
+    D:\GBCSYS\GBCOS.BIN
+
+Se GBCOS.BIN sta nella root, o dentro un'altra cartella, il
+bootloader della cartuccia non riesce a caricarlo e mostra
+"Memory Error" subito dopo il logo. La struttura corretta e':
+
+    D:\GBCSYS\GBCOS.BIN     <- OS EverDrive
+    D:\OFFWALL.GBC          <- il wallet
+    D:\LEGGIMI.TXT
+
+La scheda e' gia' formattata FAT32, che e' quello che serve.
+
+
+COME SI USA
+-----------
+1. Accendi, premi START, parla con il PROF.
+2. Scegli la starter blockchain: Bitcoin e' l'unica che si apre.
+3. Scegli l'uovo:
+     SWIFT   - una chiave singola. Si schiude in ~70 secondi.
+               Backup: la stringa WIF.
+     ANCIENT - 12 parole BIP-39 sul percorso taproot standard
+               m/86'/0'/0'/0/0. Si recupera in qualsiasi wallet.
+               Servono ~19 minuti di calcolo: lascialo acceso.
+4. Lancia la tua chiave: 128 pressioni, 128 lanci di moneta. Ogni
+   pressione esce TESTA (H) o CROCE (T) e finisce subito sulla
+   griglia, quindi vedi nascere il segreto bit per bit. Quei bit
+   SONO la chiave: in modalita' ANCIENT sono esattamente l'entropia
+   BIP-39, quindi la sequenza sullo schermo ricostruisce le stesse
+   12 parole in qualsiasi altro strumento BIP-39; in SWIFT la
+   chiave privata e' lo SHA-256 di quei bit.
+   Sotto la griglia ci sono i conteggi: H, T e la sequenza piu'
+   lunga di risultati uguali. Con 128 lanci onesti si sta vicino
+   a 64/64 e la sequenza piu' lunga non supera gli 8. Se ti sembra
+   sbilanciata, premi SELECT e rilancia tutto da capo.
+   Nota: B e C non si possono scegliere, esiste solo Bitcoin.
+5. Aspetta la schiusa senza spegnere.
+6. Vai su SECRET e COPIA A MANO SU CARTA il segreto (la WIF oppure
+   le 12 parole). Senza quello, se la cartuccia si perde o la
+   batteria muore, i fondi sono persi.
+7. SAVE TO CART salva il wallet nella batteria della cartuccia.
+
+
+RICEVERE
+--------
+Nel menu del wallet, RECEIVE (QR) mostra l'indirizzo come codice
+QR: inquadralo col telefono e ti ritrovi l'indirizzo nel wallet,
+senza trascrivere 62 caratteri a mano.
+
+MY UTXOS tiene il registro delle monete che possiedi: txid,
+indice dell'output e importo, con il saldo totale. Si inseriscono
+a mano da un block explorer (il Game Boy non ha rete).
+
+
+PER SPENDERE
+------------
+L'indirizzo e' un normale P2TR (taproot) a chiave singola.
+
+Con la WIF (modalita' SWIFT), in Bitcoin Core:
+    importdescriptors '[{"desc":"tr(LA_TUA_WIF)","timestamp":"now"}]'
+oppure in Sparrow: nuovo wallet, script type Taproot (P2TR), e
+importa la chiave privata.
+
+Con le 12 parole (modalita' ANCIENT): inseriscile in qualsiasi wallet
+BIP-39, scegli l'account taproot/BIP-86, e il primo indirizzo di
+ricezione e' quello che ti ha mostrato il Game Boy.
+
+VERIFICA SEMPRE che l'indirizzo mostrato dal wallet sia identico a
+quello sullo schermo del Game Boy PRIMA di mandarci dei soldi.
+
+
+PERSONALIZZARE
+--------------
+Tutti i testi, i dialoghi e i personaggi stanno in un unico file
+sul PC: OffWallet\content\story.txt. Si modifica con un editor
+di testo e si ricompila con:
+
+    bash tools/build.sh game
+
+Il compilatore controlla le lunghezze e ti dice riga per riga se
+una frase non ci sta nello schermo. Dettagli nel README.
+
+
+REGOLE D'USO
+------------
+Non sono avvertenze: sono le regole d'uso del dispositivo.
+
+- LANCIA LA CHIAVE SUL GAME BOY VERO, non in un emulatore: in
+  emulazione i tempi sono ripetibili e i lanci diventano
+  prevedibili. Sulla console vera le tue dita no.
+- GUARDA I CONTEGGI prima di tenere la sequenza. Se H e T sono
+  molto sbilanciati, o c'e' una sequenza lunghissima di risultati
+  uguali, premi SELECT e rilancia.
+- COPIA IL SEGRETO A MANO SU CARTA (la WIF o le 12 parole) prima
+  di mandare qualsiasi cifra all'indirizzo. Le batterie delle
+  cartucce muoiono e le SD si corrompono; un foglio in un
+  cassetto no.
+- LA CARTUCCIA E' AL PORTATORE: la chiave sta nella SRAM in
+  chiaro, chi ha la cartuccia ha i fondi. Trattala come contanti.
+- Nessuna protezione da side-channel: il tempo di calcolo dipende
+  dai bit della chiave. Conta se qualcuno puo' misurare la
+  console mentre calcola; in un cassetto no.
+- OffWallet non firma transazioni, per scelta: genera e custodisce
+  la chiave. Per spendere, importa il segreto in un wallet che
+  gestisca commissioni, resto e broadcast come si deve.
